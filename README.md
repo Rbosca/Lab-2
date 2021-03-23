@@ -2,7 +2,7 @@
 
 ![](https://github.com/Rbosca/Lab-2/blob/main/Screen%20Shot%202021-03-22%20at%2010.00.15%20PM.png)
 
-Reflective Analysis & Collaborations
+Physical Accessibility Map: Reflective Analysis & Collaborations
 
 As part of the Greenest City by 2020 action plan, increasing food assets within neighborhoods has been one of the City of Vancouver’s main objectives. Therefore, the exploration of food deserts in the city is useful to examine the ‘success’ of government initiatives. A food desert has been defined as an area with limited access to affordable or nutritional food. This is in direct contrast to an area with an abundance of and high access to any fresh food retailer, referred to as a food oasis. Researchers and scholars employ various methods to assess food accessibility to identify food deserts, I looked physical access. To measure physical access, distance-based measurement and time-based measurements to the nearest grocery store are commonly used. A food desert consists of a location residing at least 1 mile (1.6km) or 0.5 mile (0.8) away from access to a healthy, fresh food source. Other measures use time to delineate the ability to walk, cycle, ride transit, or drive to a grocery store within 10 minutes.
 
