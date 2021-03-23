@@ -14,6 +14,6 @@ The issue of urban food deserts and accessibility are extremely complex issues c
 
 The Mapbox GL JS documentation and tutorials were very helpful in the creation of this map. Specifically, the directions API, a tutorial to display a popup on hover, and an example of how to add layer beneath another layer. I also used previous class activities with the turf.js plugin to buffer the store points. Professor Bergmann was also extremely helpful throughout this project, especially to understand tinker with and debug my code.
 
-[Link to map](https://rbosca.github.io/directionstesting.html)
+[Link to map](https://Rbosca.github.io/directionstesting.html)
 
 [Link to Code](https://github.com/Rbosca/Lab-2/blob/main/directionstesting.html)
