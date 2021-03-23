@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <!-- The title of my map -->
+  <title>Display time and distance to the grocery stores</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <!-- The Mapbox GL directions plugin, this plug can show you how to get where you're going -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.css" rel="stylesheet">
+  <!-- This is the styling for the Mapbox GL directions plugin -->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js"></script>
+  <!-- jQuery is a library that simplifies many things in JavaScript.
+	     We'll use it to retrieve data from the web. -->
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <!-- Turf is a java script library -->
+  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+
+    #console { /* styling for the title box */
+      position: absolute;
+      width: 940px;
+      margin: 10px;
+      padding: 10px;
+      background-color: white;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      font: 16px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  }
+
+    .legend {
+      /* styling for the legend in the bottom right corner */
+      background-color: #fff;
+      border-radius: 1px;
+      bottom: 30px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      padding: 10px;
+      position: absolute;
+      right: 10px;
+      z-index: 1;
+    }
+
+    .legend div span {
+      /* styling for the legend elements */
+      border-radius: 50%;
+      /* this creates the cricle shape of the legend elements */
+      display: inline-block;
+      height: 10px;
+      margin-right: 5px;
+      width: 10px;
+    }
+
+    .legend h4 {
+      /* styling for margins */
+      margin: 0 0 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.js"></script>
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.css" type="text/css">
+  <div id="map"></div>
+
+  <div id='console'> <!-- Map title -->
+    <h1>Physical Accessibility to Food Stores in the City of Vancouver</h1>
+  </div>
+
+  <div id="store-legend" class="legend">
+    <!-- This is the store legend, I have the heading, feature colors and feature names -->
+    <h4>Types of Stores</h4>
+    <div><span style="background-color: #2c722d"></span>Grocery Stores</div>
+    <div><span style="background-color: #3884e0"></span>Specialty Foods Stores</div>
+    <div><span style="background-color: #ed9440"></span>Convenience Stores</div>
+  </div>
+
+  <script>
+    //the code below initializes the Mapbox GL JS map
+    mapboxgl.accessToken = 'pk.eyJ1IjoicmJvc2NhIiwiYSI6ImNrbGJicnFmbTNxZW0zMXBseW41cmVzaGcifQ.AMnuiWq2QROuGPTT6Rqxgg'; //my mapbox access token
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/rbosca/ckmcn5o6keujn17r1s55duarl', //adding the style I created in mapbox studio
+      center: [-123.100, 49.25], //this where the map will be centered each time it the page is refreshed
+      zoom: 11
+    });
+
+    var storeGeoJSONdata; // Where we store grocery store GeoJSON data
+
+    map.on('load', function() {
+          var layers = map.getStyle().layers;
+          // Find the index of the first symbol layer in the map style
+          var firstSymbolId;
+          for (var i = 0; i < layers.length; i++) {
+            if (layers[i].type === 'symbol') {
+              firstSymbolId = layers[i].id;
+              break;
+            }
+
+            $.getJSON("https://raw.githubusercontent.com/Rbosca/grocery/main/grocery.geojson", //adding the geojson data
+              function(data) {
+                // Store data for later:
+                storeGeoJSONdata = data;
+                var buffered = turf.buffer(storeGeoJSONdata, 0.8, { //this buffers the points by 0.8 kilometers
+                  units: 'kilometers'
+                });
+                map.addSource('buffered', {
+                  type: 'geojson',
+                  data: buffered
+                });
+                map.addLayer({ //adding the buffered geojson to the map
+                    'id': 'grocery',
+                    'type': 'fill',
+                    'source': 'buffered',
+                    'paint': {
+                      'fill-color': '#111111',
+                      'fill-opacity': 0.08
+                    }
+
+                  }, // This is the important part of this example: the addLayer
+// method takes 2 arguments: the layer as an object, and a string
+// representing another layer's name. if the other layer
+// exists in the stylesheet already, the new layer will be positioned
+// right before that layer in the stack, making it possible to put
+// 'overlays' anywhere in the layer stack.
+// Insert the layer beneath the first symbol layer.
+                  firstSymbolId
+                );
+              });
+        }  });
+
+
+        var popup = new mapboxgl.Popup({
+          closeButton: false,
+          closeOnClick: false
+        });
+
+        map.on('mouseenter', 'new-project-businesses-2021-0-0jih9d', function(e) { //creates popups when the mouse is situated on top of a store point
+          // Change the cursor style as a UI indicator.
+          map.getCanvas().style.cursor = 'pointer';
+
+          var coordinates = e.features[0].geometry.coordinates.slice();
+          var description = e.features[0].properties['Company Name']; //this tells the popup to return the company name of the store
+
+          // Ensure that if the map is zoomed out such that multiple
+          // copies of the feature are visible, the popup appears
+          // over the copy being pointed to.
+          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+          }
+
+          // Populate the popup and set its coordinates
+          // based on the feature found.
+          popup.setLngLat(coordinates).setHTML(description).addTo(map);
+        });
+
+        map.on('mouseleave', 'new-project-businesses-2021-0-0jih9d', function() { //this tells the popup to leave when the mouse is not over top of the store point
+          map.getCanvas().style.cursor = '';
+          popup.remove();
+        });
+
+
+        map.addControl( //this allows the user to interact with the directions API
+          new MapboxDirections({
+            accessToken: mapboxgl.accessToken
+          }),
+          'top-right' //This situates the directions API feature in the top right of the map page
+        );
+  </script>
+
+</body>
+
+</html>
